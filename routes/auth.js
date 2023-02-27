@@ -1,9 +1,16 @@
-const router = require('express').Router();
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { registerValidation, loginValidation } = require('../validation');
+import express from 'express';
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import verify from './verifyToken.js';
+import {
+  changePassValidation,
+  loginValidation,
+  registerValidation,
+} from '../validation.js';
+const router = express.Router();
 
+// Register---------------------------
 router.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
 
@@ -33,6 +40,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
+// Login---------------------------
 router.get('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -49,8 +57,45 @@ router.get('/login', async (req, res) => {
   if (!validPassword) return res.status(400).send('Invalid password');
 
   // Create and assign a token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
+    expiresIn: 600,
+  });
   res.header('auth-token', token).send(token);
 });
 
-module.exports = router;
+// Change password---------------------------
+router.put('/change-password', verify, async (req, res) => {
+  const { password, newPassword, confirmPassword } = req.body;
+  //valitation
+  const { error } = changePassValidation(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  // find User
+  const user = await User.findOne({ _id: req.user._id });
+  const { name, email, password: currentPassword } = user;
+
+  // check password
+  const validPassword = await bcrypt.compare(password, currentPassword);
+  if (!validPassword)
+    return res.status(400).send('Mật khẩu hiện tại không đúng');
+  if (newPassword !== confirmPassword)
+    return res.status(400).send('Mật khẩu nhập lại không đúng');
+
+  // Hash passwords
+  const salt = await bcrypt.genSalt(10);
+  const hashPassword = await bcrypt.hash(newPassword, salt);
+
+  const updatedUser = {
+    name,
+    email,
+    password: hashPassword,
+  };
+
+  await User.findOneAndUpdate({ _id: req.user._id }, updatedUser, {
+    returnOriginal: false,
+  });
+
+  res.send('Đổi mật khẩu thành công');
+});
+
+export default router;

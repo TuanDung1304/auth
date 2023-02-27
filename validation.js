@@ -1,4 +1,4 @@
-const Joi = require('joi');
+import Joi from 'joi';
 
 const registerValidation = (data) => {
   const schema = Joi.object({
@@ -17,5 +17,14 @@ const loginValidation = (data) => {
   return schema.validate(data);
 };
 
-module.exports.registerValidation = registerValidation;
-module.exports.loginValidation = loginValidation;
+const changePassValidation = (data) => {
+  const schema = Joi.object({
+    password: Joi.string().min(8).required(),
+    newPassword: Joi.string().min(8).required(),
+    confirmPassword: Joi.string().min(8).required(),
+    // confirmPassword: Joi.ref('password'),
+  });
+  return schema.validate(data);
+};
+
+export { changePassValidation, loginValidation, registerValidation };

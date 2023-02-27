@@ -1,11 +1,11 @@
-const express = require('express');
-const mongoose = require('mongoose');
+import express from 'express';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 const app = express();
-const dotenv = require('dotenv');
 
 //import Routes
-const authRoute = require('./routes/auth');
-const postsRoute = require('./routes/posts');
+import authRoute from './routes/auth.js';
+import postsRoute from './routes/posts.js';
 
 dotenv.config();
 
