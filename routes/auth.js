@@ -9,6 +9,7 @@ import {
   registerValidation,
 } from '../validation.js';
 const router = express.Router();
+const tokenList = {};
 
 // Register---------------------------
 router.post('/register', async (req, res) => {
@@ -41,7 +42,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login---------------------------
-router.get('/login', async (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   // Lets validate
@@ -60,6 +61,20 @@ router.get('/login', async (req, res) => {
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
     expiresIn: 600,
   });
+
+  // refresh token
+  const refreshToken = jwt.sign(
+    { _id: user._id },
+    process.env.REFRESH_TOKEN_SECRET
+  );
+
+  tokenList[refreshToken] = user._id;
+
+  const response = {
+    token,
+    refreshToken,
+  };
+
   res.header('auth-token', token).send(token);
 });
 
