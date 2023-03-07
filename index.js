@@ -5,7 +5,6 @@ const app = express();
 
 //import Routes
 import authRoute from './routes/auth.js';
-import userInfoRoute from './routes/userInfo.js';
 
 dotenv.config();
 
@@ -30,7 +29,6 @@ app.get('/', (req, res) => {
   res.send('Bài tập lớn mobile, Welcome :D');
 });
 app.use('/api/user', authRoute);
-app.use('/api/user-information', userInfoRoute);
 
 app.listen(3001, () =>
   console.log('Server up an running: http://localhost:3001')
