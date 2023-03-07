@@ -13,7 +13,7 @@ const tokenList = {};
 
 // Register---------------------------
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
   // Lets validate
   const { error } = registerValidation(req.body);
@@ -29,12 +29,13 @@ router.post('/register', async (req, res) => {
 
   // Create a new user
   const user = new User({
-    name,
+    firstName,
+    lastName,
     email,
     password: hashPassword,
   });
   try {
-    const savedUser = await user.save();
+    await user.save();
     res.send({ user: user._id });
   } catch (err) {
     res.status(400).send(err);
@@ -65,7 +66,10 @@ router.post('/login', async (req, res) => {
   // refresh token
   const refreshToken = jwt.sign(
     { _id: user._id },
-    process.env.REFRESH_TOKEN_SECRET
+    process.env.REFRESH_TOKEN_SECRET,
+    {
+      expiresIn: '2 days',
+    }
   );
 
   tokenList[refreshToken] = user._id;
@@ -75,7 +79,7 @@ router.post('/login', async (req, res) => {
     refreshToken,
   };
 
-  res.header('auth-token', token).send(token);
+  res.header('Authorization', token).send(token);
 });
 
 // Change password---------------------------
