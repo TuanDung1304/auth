@@ -53,6 +53,11 @@ router.post('/login', async (req, res) => {
   // Checking if the email exists
   const user = await User.findOne({ email });
   if (!user) return res.status(400).send('Email is not found');
+  const userInfo = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+  };
 
   // Password is correct
   const validPassword = await bcrypt.compare(password, user.password);
@@ -79,7 +84,7 @@ router.post('/login', async (req, res) => {
     refreshToken,
   };
 
-  res.header('Authorization', token).send(token);
+  res.json({ success: true, user: userInfo, token });
 });
 
 // Change password---------------------------
