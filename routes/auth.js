@@ -122,4 +122,10 @@ router.put('/change-password', verify, async (req, res) => {
   res.send('Đổi mật khẩu thành công');
 });
 
+router.get('/info', verify, async (req, res, next) => {
+  const user = await User.findOne({ _id: req.user._id });
+  const { firstName, lastName, email } = user;
+  return res.json({ success: true, data: { firstName, lastName, email } });
+});
+
 export default router;
